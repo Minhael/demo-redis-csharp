@@ -37,8 +37,8 @@ namespace benchmark_redis_scan
             var (r128, c128) = Run4Population(redis, 128, content);
             var (r65536, c65536) = Run4Population(redis, 65536, content);
             var (r262144, c262144) = Run4Population(redis, 262144, content);
-            // var (r524288, c524288) = Run4Population(redis, 524288, content);
-            // var (r1048576, c1048576) = Run4Population(redis, content, 1048576);
+            var (r524288, c524288) = Run4Population(redis, 524288, content);
+            var (r1048576, c1048576) = Run4Population(redis, 1048576, content);
 
             //  Build reports
             var report = String.Join("\n",
@@ -46,8 +46,8 @@ namespace benchmark_redis_scan
                     .Zip(new List<string>() { $"Size {c128}" }.Concat(r128.Values).Select(Pad(8)), Pipe)
                     .Zip(new List<string>() { $"Size {c65536}" }.Concat(r65536.Values).Select(Pad(8)), Pipe)
                     .Zip(new List<string>() { $"Size {c262144}" }.Concat(r262144.Values).Select(Pad(8)), Pipe)
-                    // .Zip(new List<string>() { $"Size {c524288}" }.Concat(r524288.Values).Select(Pad(8)), Pipe)
-                    // .Zip(new List<string>() { $"Size {c1048576}" }.Concat(r1048576.Values).Select(Pad(8)), Pipe)
+                    .Zip(new List<string>() { $"Size {c524288}" }.Concat(r524288.Values).Select(Pad(8)), Pipe)
+                    .Zip(new List<string>() { $"Size {c1048576}" }.Concat(r1048576.Values).Select(Pad(8)), Pipe)
             );
 
             //  Print result
