@@ -1,5 +1,6 @@
 AMD Ryzen 5 3600 3.6 GHz 16 GB Windows 10 Home x64 20H2 19042.975
 
+`321gone.xml`
 ```
 2021-05-19 11:08:13,682  INFO [1] - Connect to localhost:6379
 2021-05-19 11:08:14,044  INFO [1] - Generate h: 2 v: 6 c: 128 for p: 128
@@ -25,6 +26,7 @@ AMD Ryzen 5 3600 3.6 GHz 16 GB Windows 10 Home x64 20H2 19042.975
 11-Clean up     | 1640     | 28       | 151      | 752
 ```
 
+`reed.xml`
 ```
 2021-05-19 11:26:02,341  INFO [1] - Generate h: 2 v: 6 c: 128 for p: 128
 2021-05-19 11:26:02,456  INFO [1] - Cache set in 114ms
@@ -47,6 +49,7 @@ AMD Ryzen 5 3600 3.6 GHz 16 GB Windows 10 Home x64 20H2 19042.975
 11-Clean up     | 1        | 12       | 54
 ```
 
+`empty`
 ```
 2021-05-19 11:53:12,151  INFO [1] - Generate h: 2 v: 6 c: 128 for p: 128
 2021-05-19 11:53:12,279  INFO [1] - Cache set in 127ms
