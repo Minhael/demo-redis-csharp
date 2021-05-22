@@ -14,5 +14,13 @@ namespace benchmark_redis_scan
             action();
             return DateTimeOffset.Now.ToUnixTimeMilliseconds() - timestamp;
         }
+
+        public static Func<string, string> Pad(int width) {
+            return s => String.Format($"{{0, -{width}}}", s);
+        }
+
+        public static string Pipe(string x, string y) {
+            return x + " | " + y;
+        }
     }
 }

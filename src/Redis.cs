@@ -2,19 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using StackExchange.Redis;
+using log4net;
 
 namespace benchmark_redis_scan
 {
-    class Redis : Cache, Set {
-        public static Redis Connect(string host, int port) {
+    class Redis : Cache, Set, Measurable {
+        public static Redis Connect(string connString) {
+
+            logger.Debug($"Connect to {connString}");
             
             //  Make Connection
-            var conn = ConnectionMultiplexer.Connect($"{host}:{port}");
+            var conn = ConnectionMultiplexer.Connect($"{connString}");
 
             //  Get the exact Redis server
-            var server = conn.GetServer(host, port);
+            var server = conn.GetServer(connString);
             
             return new Redis(conn, server);
+        }
+
+        public static Redis Connect(string host, int port) {
+            return Connect($"{host}:{port}");
         }
 
         private ConnectionMultiplexer conn { get; }
@@ -32,7 +39,8 @@ namespace benchmark_redis_scan
             return Api().StringGet(key);
         }
 
-        public void Close() {
+        public void Dispose()
+        {
             conn.Close();
         }
 
@@ -66,8 +74,29 @@ namespace benchmark_redis_scan
             server.FlushDatabase();
         }
 
+        public Telemetric measure()
+        {
+            return new RedisTelemetic();
+        }
+
         private IDatabase Api() {
             return conn.GetDatabase();
         }
+
+        private class RedisTelemetic : Telemetric, IDisposable
+        {
+
+            public void SetDumpToConsole(bool isEnable)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private static readonly ILog logger = LogManager.GetLogger(typeof(Redis));
     }
 }
