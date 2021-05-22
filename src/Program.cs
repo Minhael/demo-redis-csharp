@@ -10,7 +10,7 @@ namespace benchmark_redis_scan
     {
         //  Parameters
         private const string connString = "localhost:6379";
-        private const int clientNumber = 70;
+        private const int parallelism = 200;
 
         static void Main(string[] args)
         {
@@ -22,8 +22,18 @@ namespace benchmark_redis_scan
             // logger.Info("Redis Ops:\n" + new RedisOpsTest(Redis.Connect(hostname, port)).Execute());
 
             //  Pressure test with multiple clients
-            var (result, elapsed) = Misc.measure(() => new CachePressureTest(clientNumber, () => Redis.Connect(connString)).Execute());
-            logger.Info($"Pressure Test completed in {elapsed} ms: {result}");
+            try
+            {
+                using (var cache = Redis.Connect(connString))
+                {
+                    var (result, elapsed) = Misc.measure(() => new CachePressureTest(parallelism, cache).Execute());
+                    logger.Info($"Completed in {elapsed} ms size {result}");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Error($"Failed\n{e}");
+            }
         }
 
         private static readonly ILog logger = LogManager.GetLogger(typeof(Program));

@@ -1,0 +1,11 @@
+Exception has occurred: CLR/StackExchange.Redis.RedisTimeoutException
+An exception of type 'StackExchange.Redis.RedisTimeoutException' occurred in StackExchange.Redis.dll but was not handled in user code: 'Timeout performing GET (5000ms), active: GET CachePressure, next: GET CachePressure ** possible thread-theft indicated; see https://stackexchange.github.io/StackExchange.Redis/ThreadTheft ** , inst: 4, qu: 0, qs: 19, aw: False, rs: CompletePendingMessageSync, ws: Idle, in: 0, in-pipe: 220, out-pipe: 0, serverEndpoint: localhost:6379, mc: 1/1/0, mgr: 9 of 10 available, clientName: DESKTOP-P5PTF31, IOCP: (Busy=0,Free=1000,Min=12,Max=1000), WORKER: (Busy=77,Free=32690,Min=12,Max=32767), v: 2.2.4.27433 (Please take a look at this article for some common client-side issues that can cause timeouts: https://stackexchange.github.io/StackExchange.Redis/Timeouts)'
+   at StackExchange.Redis.ConnectionMultiplexer.ExecuteSyncImpl[T](Message message, ResultProcessor`1 processor, ServerEndPoint server) in /_/src/StackExchange.Redis/ConnectionMultiplexer.cs:line 2798
+   at StackExchange.Redis.RedisBase.ExecuteSync[T](Message message, ResultProcessor`1 processor, ServerEndPoint server) in /_/src/StackExchange.Redis/RedisBase.cs:line 54
+   at StackExchange.Redis.RedisDatabase.StringGet(RedisKey key, CommandFlags flags) in /_/src/StackExchange.Redis/RedisDatabase.cs:line 2410
+   at benchmark_redis_scan.Redis.GetValue(String key) in C:\Users\User\workspace\csharp\benchmark-redis-csharp\src\Redis.cs:line 39
+   at benchmark_redis_scan.CachePressureTest.<>c__DisplayClass5_0.<GetValue>b__0() in C:\Users\User\workspace\csharp\benchmark-redis-csharp\src\CachePressureTest.cs:line 63
+   at System.Reactive.Linq.QueryLanguage.<>c__189`1.<ToAsync>b__189_1(ValueTuple`2 state) in /_/Rx.NET/Source/src/System.Reactive/Linq/QueryLanguage.Async.cs:line 907
+
+
+

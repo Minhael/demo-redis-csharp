@@ -8,10 +8,10 @@ namespace benchmark_redis_scan
 {
     class CachePressureTest : TestSuite
     {
-        private Func<Cache> cache;
+        private Cache cache;
         private int parallel;
 
-        public CachePressureTest(int parallel, Func<Cache> cache)
+        public CachePressureTest(int parallel, Cache cache)
         {
             this.cache = cache;
             this.parallel = parallel;
@@ -20,33 +20,24 @@ namespace benchmark_redis_scan
         public string Execute()
         {
             //  Cache being test
-            using (var c = cache())
-            {
-                if (!c.SetValue(KEY, "VALUE"))
-                    throw new InvalidOperationException("Fail to create cache");
-            }
+            if (!cache.SetValue(KEY_CACHE_PRESSURE, VALUE_CACHE_PRESSURE))
+                throw new InvalidOperationException("Fail to create cache");
 
             //  Run it
-            try
-            {
-                var result = Observable
-                .Range(0, parallel)
-                .SelectMany(v =>
-                    Observable.Using(() => cache(),
-                        c => Generate(60 * 1000, 500, 500)
-                        .SelectMany(v => GetValue(c, KEY, $"t:{v}"))
-                        .SubscribeOn(NewThreadScheduler.Default)
-                    )
-                )
-                .ObserveOn(CurrentThreadScheduler.Instance)
-                .LastAsync().GetAwaiter().GetResult();
+            var result = Observable
+            .Range(0, parallel)
+            .SelectMany(v =>
+                Generate(60 * 1000, 500, 500)
+                    .SelectMany(v => GetValue(cache, KEY_CACHE_PRESSURE, $"t:{v}"))
+                    .Where(v => v == VALUE_CACHE_PRESSURE)
+                    .Count()
+                    .SubscribeOn(NewThreadScheduler.Default)
+            )
+            .Aggregate(0, (a, v) => a + v)
+            .ObserveOn(CurrentThreadScheduler.Instance)
+            .LastAsync().GetAwaiter().GetResult();
 
-                return "Passed";
-            }
-            catch (Exception e)
-            {
-                return $"Pressure Test Exception\n{e}";
-            }
+            return result.ToString();
         }
 
         private static IObservable<long> Generate(long durationMs, long periodMs, int flexMs)
@@ -73,7 +64,8 @@ namespace benchmark_redis_scan
             });
         }
 
-        private const string KEY = "CachePressure";
+        private const string KEY_CACHE_PRESSURE = "CachePressure";
+        private const string VALUE_CACHE_PRESSURE = "VALUE";
         private static readonly ILog logger = LogManager.GetLogger(typeof(CachePressureTest));
     }
 }
