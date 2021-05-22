@@ -20,8 +20,11 @@ namespace benchmark_redis_scan
         public string Execute()
         {
             //  Cache being test
-            if (!cache().SetValue(KEY, "VALUE"))
-                throw new InvalidOperationException("Fail to create cache");
+            using (var c = cache())
+            {
+                if (!c.SetValue(KEY, "VALUE"))
+                    throw new InvalidOperationException("Fail to create cache");
+            }
 
             //  Run it
             try
@@ -42,7 +45,7 @@ namespace benchmark_redis_scan
             }
             catch (Exception e)
             {
-                return $"Failed with\n{e}";
+                return $"Pressure Test Exception\n{e}";
             }
         }
 
