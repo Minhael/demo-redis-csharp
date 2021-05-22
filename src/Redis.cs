@@ -12,7 +12,7 @@ namespace benchmark_redis_scan
             var conn = ConnectionMultiplexer.Connect($"{host}:{port}");
 
             //  Get the exact Redis server
-            var server = conn.GetServer("localhost", 6379);
+            var server = conn.GetServer(host, port);
             
             return new Redis(conn, server);
         }
