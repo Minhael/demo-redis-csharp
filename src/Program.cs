@@ -10,7 +10,7 @@ namespace benchmark_redis_scan
     {
         //  Parameters
         private const string connString = "localhost:6379";
-        private const int parallelism = 200;
+        private const int parallelism = 120;
 
         static void Main(string[] args)
         {
@@ -26,7 +26,7 @@ namespace benchmark_redis_scan
             {
                 using (var cache = Redis.Connect(connString))
                 {
-                    var (result, elapsed) = Misc.measure(() => new CachePressureTest(parallelism, cache).Execute());
+                    var (result, elapsed) = Misc.measure(() => new RedisPressureTest(parallelism, cache).Execute());
                     logger.Info($"Completed in {elapsed} ms size {result}");
                 }
             }
