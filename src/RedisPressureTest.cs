@@ -59,7 +59,7 @@ namespace benchmark_redis_scan
 
             //  Rethrow exception
             if (err != null)
-                throw err;
+                throw new Exception("Worker exception", err);
             return result.ToString();
         }
 
