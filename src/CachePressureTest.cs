@@ -1,11 +1,15 @@
 using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Concurrency;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Channels;
 using log4net;
 
 namespace benchmark_redis_scan
 {
+    /**
+     * https://deniskyashif.com/2020/01/07/csharp-channels-part-3/
+    **/
     class CachePressureTest : TestSuite
     {
         private Cache cache;
@@ -23,45 +27,103 @@ namespace benchmark_redis_scan
             if (!cache.SetValue(KEY_CACHE_PRESSURE, VALUE_CACHE_PRESSURE))
                 throw new InvalidOperationException("Fail to create cache");
 
-            //  Run it
-            var result = Observable
-            .Range(0, parallel)
-            .SelectMany(v =>
-                Generate(60 * 1000, 500, 500)
-                    .SelectMany(v => GetValue(cache, KEY_CACHE_PRESSURE, $"t:{v}"))
-                    .Where(v => v == VALUE_CACHE_PRESSURE)
-                    .Count()
-                    .SubscribeOn(NewThreadScheduler.Default)
-            )
-            .Aggregate(0, (a, v) => a + v)
-            .ObserveOn(CurrentThreadScheduler.Instance)
-            .LastAsync().GetAwaiter().GetResult();
+            //  Global cancel signal
+            CancellationTokenSource source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
 
+            //  Create parallel execution
+            long result = 0;
+            Exception err = null;
+            var tasks = new List<Task>();
+            for (int i = 0; i < parallel; ++i)
+            {
+                var clientNumber = i;
+                var task = Task.Run(async () =>
+                {
+                    await foreach (var (count, e) in Execute(token, cache, clientNumber).Reader.ReadAllAsync())
+                    {
+                        result += count;
+                        if (e != null && e! is OperationCanceledException && source.IsCancellationRequested)
+                        {
+                            source.Cancel();
+                            err = e;
+                        }
+                    }
+                });
+                tasks.Add(task);
+            }
+
+            //  Wait for all worker finish
+            Task.WhenAll(tasks).Wait();
+
+            //  Rethrow exception
+            if (err != null)
+                throw err;
             return result.ToString();
         }
 
-        private static IObservable<long> Generate(long durationMs, long periodMs, int flexMs)
+        private static Channel<(long, Exception)> Execute(CancellationToken token, Cache cache, int clientNumber)
         {
-            var r = new Random();
-            return Observable
-            .Interval(TimeSpan.FromMilliseconds(periodMs))
-            .TakeUntil(Observable.Timer(TimeSpan.FromMilliseconds(durationMs)))
-            .SelectMany(v =>
+            var ec = Channel.CreateUnbounded<(long, Exception)>();
+
+            Task.Run(async () =>
             {
-                var delayMs = r.Next(flexMs);
-                return Observable
-                .Return(v + delayMs)
-                .Delay(TimeSpan.FromMilliseconds(delayMs));
+                try
+                {
+                    var result = await Generate(token, 60 * 1000, 500, 500, x =>
+                    {
+                        logger.Info($"[t:{clientNumber}]: GET");
+                        var value = cache.GetValue(KEY_CACHE_PRESSURE);
+                        if (value != VALUE_CACHE_PRESSURE)
+                        {
+                            return 0;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    });
+                    await ec.Writer.WriteAsync((result, null));
+                }
+                catch (Exception e)
+                {
+                    await ec.Writer.WriteAsync((0, e));
+                }
+                finally
+                {
+                    ec.Writer.Complete();
+                }
             });
+
+            return ec;
         }
 
-        private static IObservable<string> GetValue(Cache cache, string key, string tag = "")
+        private static async Task<long> Generate(CancellationToken token, long durationMs, int periodMs, int flexMs, Func<long, long> exe)
         {
-            return Observable.Start(() =>
+
+            var r = new Random(Guid.NewGuid().GetHashCode());
+            long count = 0;
+            long elapsed = 0;
+
+            while (elapsed < durationMs)
             {
-                logger.Info($"[{tag}]: GET");
-                return cache.GetValue(key);
-            });
+                var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                var delayMs = r.Next(flexMs);
+
+                if (token.IsCancellationRequested)
+                    return count;
+
+                await Task.Delay(delayMs);
+                count += exe(elapsed);
+
+                if (token.IsCancellationRequested)
+                    return count;
+
+                await Task.Delay(Math.Max(0, periodMs - delayMs));
+                elapsed += DateTimeOffset.Now.ToUnixTimeMilliseconds() - now;
+            }
+
+            return count;
         }
 
         private const string KEY_CACHE_PRESSURE = "CachePressure";
