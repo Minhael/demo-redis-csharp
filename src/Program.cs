@@ -22,12 +22,39 @@ namespace benchmark_redis_scan
             // logger.Info("Redis Ops:\n" + new RedisOpsTest(Redis.Connect(hostname, port)).Execute());
 
             //  Pressure test with multiple clients
-            runCachePressureTest("StackExchange", () => StackEx.Connect(connString));
-            runCachePressureTest("NewLife", () => NewLife.Connect(connString));
-            runCachePressureTest("FreeRedis", () => FreeRedis.Connect(connString));
+            // runCachePressureTest("StackExchange", () => StackEx.Connect(connString));
+            // runCachePressureTest("NewLife", () => NewLife.Connect(connString));
+            // runCachePressureTest("FreeRedis", () => FreeRedis.Connect(connString));
+
+            using (var set = StackEx.Connect(connString))
+            {
+                runSetPressureTest("StackExchange", set);
+            }
+            using (var set = NewLife.Connect(connString))
+            {
+                runSetPressureTest("NewLife", set);
+            }
+            using (var set = FreeRedis.Connect(connString))
+            {
+                runSetPressureTest("FreeRedis", set);
+            }
         }
 
-        private static void runCachePressureTest(string name, Func<Cache> factory) {
+        private static void runSetPressureTest(string name, Set set)
+        {
+            try
+            {
+                var (result, elapsed) = Misc.measure(() => new SetPressureTest(parallelism, set).Execute());
+                logger.Info($"{name}: {elapsed} ms = {result}");
+            }
+            catch (Exception e)
+            {
+                logger.Error($"{name}: Failed\n{e}");
+            }
+        }
+
+        private static void runCachePressureTest(string name, Func<Cache> factory)
+        {
             try
             {
                 using (var cache = factory())

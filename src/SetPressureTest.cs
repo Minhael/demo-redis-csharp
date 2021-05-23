@@ -73,7 +73,7 @@ namespace benchmark_redis_scan
                 {
                     var result = await Generate(token, 60 * 1000, 500, 500, x =>
                     {
-                        logger.Info($"[t:{clientNumber}]: SCAN");
+                        logger.Debug($"[t:{clientNumber}]: SCAN");
                         
                         var value = cache.KeySet($"{KEY_CACHE_PRESSURE}");
                         
