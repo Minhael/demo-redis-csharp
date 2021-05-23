@@ -9,8 +9,8 @@ namespace benchmark_redis_scan
     class Program
     {
         //  Parameters
-        private const string connString = "localhost:6379";
-        private const int parallelism = 200;
+        private const string connString = "127.0.0.1:6379";
+        private const int parallelism = 400;
 
         static void Main(string[] args)
         {
@@ -22,17 +22,23 @@ namespace benchmark_redis_scan
             // logger.Info("Redis Ops:\n" + new RedisOpsTest(Redis.Connect(hostname, port)).Execute());
 
             //  Pressure test with multiple clients
+            runCachePressureTest("StackExchange", () => StackEx.Connect(connString));
+            runCachePressureTest("NewLife", () => NewLife.Connect(connString));
+            runCachePressureTest("FreeRedis", () => FreeRedis.Connect(connString));
+        }
+
+        private static void runCachePressureTest(string name, Func<Cache> factory) {
             try
             {
-                using (var cache = Redis.Connect(connString))
+                using (var cache = factory())
                 {
-                    var (result, elapsed) = Misc.measure(() => new RedisPressureTest(parallelism, cache).Execute());
-                    logger.Info($"Completed in {elapsed} ms size {result}");
+                    var (result, elapsed) = Misc.measure(() => new CachePressureTest(parallelism, cache).Execute());
+                    logger.Info($"{name}: {elapsed} ms = {result}");
                 }
             }
             catch (Exception e)
             {
-                logger.Error($"Failed\n{e}");
+                logger.Error($"{name}: Failed\n{e}");
             }
         }
 

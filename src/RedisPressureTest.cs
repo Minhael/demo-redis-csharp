@@ -11,12 +11,12 @@ namespace benchmark_redis_scan
     /**
      * https://deniskyashif.com/2020/01/07/csharp-channels-part-3/
     **/
-    class RedisPressureTest : TestSuite
+    class SetPressureTest : TestSuite
     {
-        private Redis cache;
+        private Set cache;
         private int parallel;
 
-        public RedisPressureTest(int parallel, Redis cache)
+        public SetPressureTest(int parallel, Set cache)
         {
             this.cache = cache;
             this.parallel = parallel;
@@ -63,7 +63,7 @@ namespace benchmark_redis_scan
             return result.ToString();
         }
 
-        private static Channel<(long, Exception)> Execute(CancellationToken token, Redis cache, int clientNumber)
+        private static Channel<(long, Exception)> Execute(CancellationToken token, Set cache, int clientNumber)
         {
             var ec = Channel.CreateUnbounded<(long, Exception)>();
 

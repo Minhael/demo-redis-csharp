@@ -5,17 +5,17 @@ using System.IO;
 
 namespace benchmark_redis_scan
 {
-    class RedisOpsTest : TestSuite
+    class StackExOpsTest : TestSuite
     {
-        public static RedisOpsTest WithContent(Redis redis, string filePath = "etc/321gone.xml") {
+        public static StackExOpsTest WithContent(StackEx redis, string filePath = "etc/321gone.xml") {
             //  Read additional data for filling up value
-            return new RedisOpsTest(redis, File.ReadAllText(filePath));
+            return new StackExOpsTest(redis, File.ReadAllText(filePath));
         }
 
-        private Redis redis;
+        private StackEx redis;
         private String content;
 
-        public RedisOpsTest(Redis redis, string content = "") {
+        public StackExOpsTest(StackEx redis, string content = "") {
             this.redis = redis;
             this.content = content;
         }
@@ -41,7 +41,7 @@ namespace benchmark_redis_scan
             return report;
         }
 
-        private static (IDictionary<string, string>, long) Run4Population(Redis redis, int population, string content = "") {
+        private static (IDictionary<string, string>, long) Run4Population(StackEx redis, int population, string content = "") {
             //  Benchmark is not gonna working when population < 128
             population = Math.Max(128, population);
 
@@ -55,7 +55,7 @@ namespace benchmark_redis_scan
         /**
          * Assumed at least 2 vertical
         **/
-        private static IDictionary<string, string> Benchmark(Redis redis) {
+        private static IDictionary<string, string> Benchmark(StackEx redis) {
             var rt = new SortedDictionary<string, string>();
 
             // Single operation

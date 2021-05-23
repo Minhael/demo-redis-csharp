@@ -6,8 +6,8 @@ using log4net;
 
 namespace benchmark_redis_scan
 {
-    class Redis : Cache, Set, Measurable {
-        public static Redis Connect(string connString) {
+    class StackEx : Cache, Set, Measurable {
+        public static StackEx Connect(string connString) {
 
             logger.Debug($"Connect to {connString}");
             
@@ -17,17 +17,17 @@ namespace benchmark_redis_scan
             //  Get the exact Redis server
             var server = conn.GetServer(connString);
             
-            return new Redis(conn, server);
+            return new StackEx(conn, server);
         }
 
-        public static Redis Connect(string host, int port) {
+        public static StackEx Connect(string host, int port) {
             return Connect($"{host}:{port}");
         }
 
         private ConnectionMultiplexer conn { get; }
         private IServer server { get; }
 
-        public Redis(ConnectionMultiplexer conn, IServer server) {
+        public StackEx(ConnectionMultiplexer conn, IServer server) {
             this.conn = conn;
             this.server = server;
         }
@@ -97,6 +97,6 @@ namespace benchmark_redis_scan
             }
         }
 
-        private static readonly ILog logger = LogManager.GetLogger(typeof(Redis));
+        private static readonly ILog logger = LogManager.GetLogger(typeof(StackEx));
     }
 }

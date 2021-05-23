@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FreeRedis" Version="0.3.5" />
     <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="NewLife.Redis" Version="3.9.2021.505" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>
 
