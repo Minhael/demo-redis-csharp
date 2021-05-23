@@ -10,7 +10,7 @@ namespace benchmark_redis_scan
     {
         //  Parameters
         private const string connString = "localhost:6379";
-        private const int parallelism = 1;
+        private const int parallelism = 200;
 
         static void Main(string[] args)
         {

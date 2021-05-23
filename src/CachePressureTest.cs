@@ -43,7 +43,7 @@ namespace benchmark_redis_scan
                     await foreach (var (count, e) in Execute(token, cache, clientNumber).Reader.ReadAllAsync())
                     {
                         result += count;
-                        if (e != null && e! is OperationCanceledException && source.IsCancellationRequested)
+                        if (e != null && e is not OperationCanceledException && !source.IsCancellationRequested)
                         {
                             source.Cancel();
                             err = e;
