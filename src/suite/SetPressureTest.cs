@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading.Channels;
 using log4net;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     /**
      * https://deniskyashif.com/2020/01/07/csharp-channels-part-3/

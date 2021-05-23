@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using log4net;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     interface Cache: KeyValueStore, IDisposable {
     }

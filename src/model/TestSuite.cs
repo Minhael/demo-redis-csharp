@@ -1,6 +1,6 @@
 using System;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     interface TestSuite {
         string Execute();

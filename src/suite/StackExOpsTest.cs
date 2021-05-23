@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     class StackExOpsTest : TestSuite
     {

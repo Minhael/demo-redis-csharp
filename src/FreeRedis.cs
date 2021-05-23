@@ -4,7 +4,7 @@ using System.Linq;
 using FreeRedis;
 using log4net;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     class FreeRedis : Cache, Set {
 

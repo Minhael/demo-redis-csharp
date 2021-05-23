@@ -1,4 +1,4 @@
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     interface Telemetric {
         void SetDumpToConsole(bool isEnable);

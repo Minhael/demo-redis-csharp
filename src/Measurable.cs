@@ -1,4 +1,4 @@
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     interface Measurable {
         Telemetric measure();

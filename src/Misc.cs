@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using log4net;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     public static class Misc {
         public static (T, long) measure<T>(Func<T> action) {

@@ -1,4 +1,4 @@
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     public interface KeyValueStore {
         bool SetValue(string key, string value);

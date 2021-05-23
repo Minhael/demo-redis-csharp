@@ -4,7 +4,7 @@ using NewLife.Caching;
 using NewLife.Caching.Models;
 using log4net;
 
-namespace benchmark_redis_scan
+namespace RedisPerformanceTest
 {
     class NewLife : Cache, Set {
 
