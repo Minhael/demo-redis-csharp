@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,19 +13,33 @@ namespace benchmark_redis_scan
     **/
     class CachePressureTest : TestSuite
     {
+        public static void Prepare(Cache cache) {
+            //  Create 820k caches sample
+            if (cache.GetValue(KEY_CACHE_PRESSURE) == null) {
+                Misc.GeneratePopulation(cache, 1048576, 6, KEY_CACHE_PRESSURE, File.ReadAllText(@"etc/cd_catalog.xml"));
+                cache.SetValue(KEY_CACHE_PRESSURE, "1");
+            }
+        }
         private Cache cache;
         private int parallel;
 
-        public CachePressureTest(int parallel, Cache cache)
+        private long durationMs;
+        private int periodMs;
+        private int flexMs;
+
+        public CachePressureTest(int parallel, Cache cache, long durationMs = 60 * 1000, int periodMs = 500, int flexMs = 500)
         {
             this.cache = cache;
             this.parallel = parallel;
+            this.durationMs = durationMs;
+            this.periodMs = periodMs;
+            this.flexMs = flexMs;
         }
 
         public string Execute()
         {
             //  Cache being test
-            if (!cache.SetValue(KEY_CACHE_PRESSURE, VALUE_CACHE_PRESSURE))
+            if (!cache.SetValue($"{KEY_CACHE_PRESSURE}:0:0:0:0:0:0", VALUE_CACHE_PRESSURE))
                 throw new InvalidOperationException("Fail to create cache");
 
             //  Global cancel signal
@@ -62,7 +77,7 @@ namespace benchmark_redis_scan
             return result.ToString();
         }
 
-        private static Channel<(long, Exception)> Execute(CancellationToken token, Cache cache, int clientNumber)
+        private Channel<(long, Exception)> Execute(CancellationToken token, Cache cache, int clientNumber)
         {
             var ec = Channel.CreateUnbounded<(long, Exception)>();
 
@@ -70,10 +85,10 @@ namespace benchmark_redis_scan
             {
                 try
                 {
-                    var result = await Generate(token, 60 * 1000, 500, 500, x =>
+                    var result = await Generate(token, durationMs, periodMs, flexMs, x =>
                     {
                         logger.Debug($"[t:{clientNumber}]: GET");
-                        var value = cache.GetValue(KEY_CACHE_PRESSURE);
+                        var value = cache.GetValue($"{KEY_CACHE_PRESSURE}:0:0:0:0:0:0");
                         if (value != VALUE_CACHE_PRESSURE)
                         {
                             return 0;

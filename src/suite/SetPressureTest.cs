@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,19 +14,34 @@ namespace benchmark_redis_scan
     **/
     class SetPressureTest : TestSuite
     {
-        private Set cache;
+        public static void Prepare(Set set) {
+            //  Create 820k caches sample
+            if (set.GetValue(KEY_CACHE_PRESSURE) == null) {
+                Misc.GeneratePopulation(set, 1048576, 6, KEY_CACHE_PRESSURE, File.ReadAllText(@"etc/cd_catalog.xml"));
+                set.SetValue(KEY_CACHE_PRESSURE, "1");
+            }
+        }
+
+        private Set set;
         private int parallel;
 
-        public SetPressureTest(int parallel, Set cache)
+        private long durationMs;
+        private int periodMs;
+        private int flexMs;
+
+        public SetPressureTest(int parallel, Set set, long durationMs = 60 * 1000, int periodMs = 500, int flexMs = 500)
         {
-            this.cache = cache;
+            this.set = set;
             this.parallel = parallel;
+            this.durationMs = durationMs;
+            this.periodMs = periodMs;
+            this.flexMs = flexMs;
         }
 
         public string Execute()
         {
             //  Cache being test
-            if (!cache.SetValue(KEY_CACHE_PRESSURE, VALUE_CACHE_PRESSURE))
+            if (!set.SetValue($"{KEY_CACHE_PRESSURE}:0:0:0:0:0:0", VALUE_CACHE_PRESSURE))
                 throw new InvalidOperationException("Fail to create cache");
 
             //  Global cancel signal
@@ -41,7 +57,7 @@ namespace benchmark_redis_scan
                 var clientNumber = i;
                 var task = Task.Run(async () =>
                 {
-                    await foreach (var (count, e) in Execute(token, cache, clientNumber).Reader.ReadAllAsync())
+                    await foreach (var (count, e) in Execute(token, set, clientNumber).Reader.ReadAllAsync())
                     {
                         result += count;
                         if (e != null && e is not OperationCanceledException && !source.IsCancellationRequested)
@@ -63,7 +79,7 @@ namespace benchmark_redis_scan
             return result.ToString();
         }
 
-        private static Channel<(long, Exception)> Execute(CancellationToken token, Set cache, int clientNumber)
+        private Channel<(long, Exception)> Execute(CancellationToken token, Set cache, int clientNumber)
         {
             var ec = Channel.CreateUnbounded<(long, Exception)>();
 
@@ -71,13 +87,13 @@ namespace benchmark_redis_scan
             {
                 try
                 {
-                    var result = await Generate(token, 60 * 1000, 500, 500, x =>
+                    var result = await Generate(token, durationMs, periodMs, flexMs, x =>
                     {
                         logger.Debug($"[t:{clientNumber}]: SCAN");
                         
-                        var value = cache.KeySet($"{KEY_CACHE_PRESSURE}");
+                        var value = cache.KeySet($"{KEY_CACHE_PRESSURE}:0:0:*");
                         
-                        if (value.Count() != 1)
+                        if (value.Count() < 1)
                         {
                             return 0;
                         }

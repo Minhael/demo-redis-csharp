@@ -46,7 +46,7 @@ namespace benchmark_redis_scan
             population = Math.Max(128, population);
 
             //  Fixed vertical depth at default = 6
-            var size = Cache.GenerateCache(redis, population, 6, content, $"{PREFIX}");
+            var size = Misc.GeneratePopulation(redis, population, 6, content, $"{PREFIX}");
 
             //  Execute the test
             return (Benchmark(redis), size);
